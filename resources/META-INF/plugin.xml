@@ -1,0 +1,48 @@
+<idea-plugin>
+    <id>hot_deploy</id>
+    <name>热部署工具</name>
+    <version>1.0</version>
+    <vendor email="49766869@qq.com" url="http://www.yourcompany.com">YourCompany</vendor>
+
+    <description><![CDATA[
+      Enter short description for your plugin here.<br>
+      <em>most HTML tags may be used</em>
+    ]]></description>
+
+    <change-notes><![CDATA[
+      Add change notes here.<br>
+      <em>most HTML tags may be used</em>
+    ]]>
+    </change-notes>
+
+    <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html for description -->
+    <idea-version since-build="145.0"/>
+
+    <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
+         on how to target different products -->
+    <!-- uncomment to enable plugin in all products
+    <depends>com.intellij.modules.lang</depends>
+    -->
+
+    <extensions defaultExtensionNs="com.intellij">
+        <postStartupActivity implementation="com.xin.StartProject"></postStartupActivity>
+    </extensions>
+
+    <actions>
+        <!-- Add your actions here -->
+        <action id="com.xin.action.RunTestAction" class="com.xin.action.RunTestAction"
+                text="热部署启动" description="自动生成接口">
+            <add-to-group group-id="WindowMenu" anchor="first"/>
+        </action>
+        <action id="com.xin.action.ReRunTestAction" class="com.xin.action.ReRunTestAction"
+                text="热部署重启动" description="自动生成接口">
+            <add-to-group group-id="WindowMenu" anchor="first"/>
+        </action>
+        <action id="com.xin.action.RunTestSettingAction" class="com.xin.action.RunTestSettingAction"
+                text="热部署配置" description="配置参数">
+            <add-to-group group-id="WindowMenu" anchor="first"/>
+        </action>
+
+    </actions>
+
+</idea-plugin>
