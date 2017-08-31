@@ -1,5 +1,8 @@
 package com.xin;
 
+import com.alibaba.druid.sql.dialect.mysql.visitor.MySqlOutputVisitor;
+import com.alibaba.druid.sql.visitor.SQLASTOutputVisitor;
+import com.alibaba.druid.support.logging.LogFactory;
 import com.intellij.execution.CommonJavaRunConfigurationParameters;
 import com.intellij.execution.ExecutionListener;
 import com.intellij.execution.ExecutionManager;
@@ -29,6 +32,9 @@ import static com.xin.gui.SettingDialog.IS_XREBEL;
  * @description
  */
 public class StartProject implements StartupActivity {
+    public static LogFactory          logFactory;
+    public static MySqlOutputVisitor  mySqlOutputVisitor;
+    public static SQLASTOutputVisitor sqlastOutputVisitor;
 
     public static final String                      PROJECT_PORT       = "project_port";
     public              WeakHashMap<String, String> executorIdParamMap = new WeakHashMap<>();

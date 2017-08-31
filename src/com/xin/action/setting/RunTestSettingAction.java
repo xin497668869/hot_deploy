@@ -1,4 +1,4 @@
-package com.xin.action;
+package com.xin.action.setting;
 
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;

@@ -1,4 +1,4 @@
-package com.xin.action;
+package com.xin.action.start;
 
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.diagnostic.Logger;
@@ -9,7 +9,7 @@ import com.xin.base.BaseAnAction;
 import com.xin.base.PluginHelper;
 import org.apache.commons.lang3.StringUtils;
 
-import static com.xin.action.RunTestAction.requestTest;
+import static com.xin.action.start.RunTestAction.requestTest;
 
 /**
  * @author linxixin@cvte.com

@@ -1,5 +1,6 @@
-package com.xin.action;
+package com.xin.action.start;
 
+import com.alibaba.fastjson.JSON;
 import com.intellij.compiler.actions.CompileDirtyAction;
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.application.ApplicationManager;
@@ -11,9 +12,15 @@ import com.intellij.openapi.ui.Messages;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.impl.source.PsiJavaFileImpl;
+import com.intellij.util.messages.Topic;
 import com.xin.base.BaseAnAction;
 import com.xin.base.PluginHelper;
+import com.xin.stack.ResponseData;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.net.ConnectException;
 import java.net.Socket;
 
@@ -27,6 +34,11 @@ import static com.xin.StartProject.PROJECT_PORT;
 public class RunTestAction extends BaseAnAction {
     private static final Logger log = Logger.getInstance(RunTestAction.class);
 
+    public interface ResponseDataTopicListener {
+        void come(ResponseData responseData);
+    }
+
+    public static Topic<ResponseDataTopicListener> ResponseDataTopic = Topic.create("ResponseDataTopicListener", ResponseDataTopicListener.class);
 
     @Override
     public void actionPerformed(PluginHelper pluginHelper, Project project, Editor editor) {
@@ -78,11 +90,23 @@ public class RunTestAction extends BaseAnAction {
                     .invokeLater(() -> Messages.showInfoMessage("端口没开, 项目启动完了吗 ", "提示"));
         }
 
-        ApplicationManager.getApplication().invokeLater(() -> new Thread(() -> {
+        //端口没开
+        ApplicationManager.getApplication().invokeLater(new Thread(() -> {
             log.info("准备了请求了 端口 " + port);
             try {
                 Socket socket = new Socket("localhost", port);
-                socket.getOutputStream().write(requestContent.getBytes());
+//                socket.setSoTimeout(3000);
+                BufferedWriter outputStream = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+                outputStream.write(requestContent + "\r\n");
+                outputStream.flush();
+                BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                System.out.println("正在读");
+                String response = bufferedReader.readLine();
+                System.out.println("读完啦");
+                ResponseData responseData = JSON.parseObject(response, ResponseData.class);
+                System.out.println(responseData);
+                ResponseDataTopicListener responseDataTopicListener = project.getMessageBus().syncPublisher(ResponseDataTopic);
+                responseDataTopicListener.come(responseData);
                 socket.close();
                 PropertiesComponent.getInstance(project).setValue("lastRequest", requestContent);
             } catch (ConnectException e) {
@@ -96,7 +120,7 @@ public class RunTestAction extends BaseAnAction {
                         .invokeLater(() -> Messages.showInfoMessage("请求异常 " + e.getMessage(), "提示"));
             }
 
-        }).start());
+        })::start);
     }
 
 

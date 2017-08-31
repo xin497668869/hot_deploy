@@ -26,19 +26,21 @@
 
     <extensions defaultExtensionNs="com.intellij">
         <postStartupActivity implementation="com.xin.StartProject"></postStartupActivity>
+        <toolWindow id="code_review" anchor="right" icon="/images/haha.png"
+                    factoryClass="com.xin.stack.StackToolWindowFactory"/>
     </extensions>
 
     <actions>
         <!-- Add your actions here -->
-        <action id="com.xin.action.RunTestAction" class="com.xin.action.RunTestAction"
+        <action id="com.xin.action.start.RunTestAction" class="com.xin.action.start.RunTestAction"
                 text="热部署启动" description="自动生成接口">
             <add-to-group group-id="WindowMenu" anchor="first"/>
         </action>
-        <action id="com.xin.action.ReRunTestAction" class="com.xin.action.ReRunTestAction"
+        <action id="com.xin.action.start.ReRunTestAction" class="com.xin.action.start.ReRunTestAction"
                 text="热部署重启动" description="自动生成接口">
             <add-to-group group-id="WindowMenu" anchor="first"/>
         </action>
-        <action id="com.xin.action.RunTestSettingAction" class="com.xin.action.RunTestSettingAction"
+        <action id="com.xin.action.setting.RunTestSettingAction" class="com.xin.action.setting.RunTestSettingAction"
                 text="热部署配置" description="配置参数">
             <add-to-group group-id="WindowMenu" anchor="first"/>
         </action>
