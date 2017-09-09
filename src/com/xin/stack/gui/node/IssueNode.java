@@ -19,6 +19,7 @@
  */
 package com.xin.stack.gui.node;
 
+import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.util.IconLoader;
 import com.intellij.ui.SimpleTextAttributes;
 import com.xin.stack.gui.tree.TreeCellRenderer;
@@ -26,8 +27,13 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 
+import static com.xin.gui.SettingDialog.METHOD_TIMEOUT;
+
 public class IssueNode extends AbstractNode {
-    public static final Icon ICON = IconLoader.getIcon("/images/haha.png");
+    public static final Icon ICON             = IconLoader.getIcon("/images/haha.png");
+    public static final Icon ICON_TIMEOUT     = IconLoader.getIcon("/images/ico-sonarlint-13.png");
+    public static final Icon ICON_NO_POSITION = IconLoader.getIcon("/images/type/vulnerability.png");
+
     private final LiveIssue issue;
 
     public IssueNode(LiveIssue issue) {
@@ -38,7 +44,14 @@ public class IssueNode extends AbstractNode {
     public void render(TreeCellRenderer renderer) {
 
         renderer.append(issueCoordinates(issue), SimpleTextAttributes.GRAY_ATTRIBUTES);
-        renderer.setIcon(ICON);
+        long timeoutValue = PropertiesComponent.getInstance(issue.getProject()).getOrInitLong(METHOD_TIMEOUT, Integer.MAX_VALUE);
+        if (issue.getTextRange() == null) {
+            renderer.setIcon(ICON_NO_POSITION);
+        } else if (issue.getTimeConsume() > timeoutValue) {
+            renderer.setIcon(ICON_TIMEOUT);
+        } else {
+            renderer.setIcon(ICON);
+        }
         renderer.setToolTipText("Double click to open location");
         renderer.append(issue.getMessage());
 

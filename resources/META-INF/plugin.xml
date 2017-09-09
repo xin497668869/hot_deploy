@@ -28,6 +28,8 @@
         <postStartupActivity implementation="com.xin.StartProject"></postStartupActivity>
         <toolWindow id="code_review" anchor="right" icon="/images/haha.png"
                     factoryClass="com.xin.stack.StackToolWindowFactory"/>
+        <scratch.rootType implementation="com.intellij.database.console.DbConsoleRootType"/>
+        <scratch.rootType implementation="com.intellij.database.run.ui.grid.editors.CellEditorScratchRootType"/>
     </extensions>
 
     <actions>

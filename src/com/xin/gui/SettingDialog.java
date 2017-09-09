@@ -2,6 +2,7 @@ package com.xin.gui;
 
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.Messages;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.uiDesigner.core.Spacer;
@@ -15,14 +16,19 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
 public class SettingDialog extends JDialog {
-    public static final String IS_HOTDEPLOY = "is_hotdeploy";
-    public static final String IS_XREBEL    = "is_xrebel";
-    private JPanel    contentPane;
-    private JButton   buttonOK;
-    private JButton   cancelButton;
-    private JCheckBox cbHotdeploy;
-    private JCheckBox cbXrebel;
-    private Project   project;
+    public static final String IS_HOTDEPLOY   = "is_hotdeploy";
+    public static final String IS_XREBEL      = "is_xrebel";
+    public static final String MONITOR_CLASS  = "monitor_class";
+    public static final String METHOD_TIMEOUT = "method_timeout";
+    private JPanel     contentPane;
+    private JButton    buttonOK;
+    private JButton    cancelButton;
+    private JCheckBox  cbHotdeploy;
+    private JCheckBox  cbXrebel;
+    private JTextArea  classMonitor;
+    private JTextField methodTimeout;
+    private JLabel     timeoutlabel;
+    private Project    project;
 
     public SettingDialog(Project project) {
         this.project = project;
@@ -31,6 +37,9 @@ public class SettingDialog extends JDialog {
         getRootPane().setDefaultButton(buttonOK);
         cbHotdeploy.setSelected(PropertiesComponent.getInstance(project).getBoolean(IS_HOTDEPLOY));
         cbXrebel.setSelected(PropertiesComponent.getInstance(project).getBoolean(IS_XREBEL));
+        classMonitor.setText(PropertiesComponent.getInstance(project).getValue(MONITOR_CLASS));
+        classMonitor.setSize(300, 500);
+        methodTimeout.setText(String.valueOf(PropertiesComponent.getInstance(project).getOrInitLong(METHOD_TIMEOUT, Integer.MAX_VALUE)));
 
 
         buttonOK.addActionListener(new ActionListener() {
@@ -66,6 +75,15 @@ public class SettingDialog extends JDialog {
     private void onOK() {
         PropertiesComponent.getInstance(project).setValue(IS_HOTDEPLOY, cbHotdeploy.isSelected());
         PropertiesComponent.getInstance(project).setValue(IS_XREBEL, cbXrebel.isSelected());
+        PropertiesComponent.getInstance(project).setValue(MONITOR_CLASS, classMonitor.getText());
+        String text = methodTimeout.getText();
+        try {
+            Long.valueOf(text);
+        } catch (NumberFormatException e) {
+            Messages.showErrorDialog("必须填写整数类型数据 " + text, "提示");
+            return;
+        }
+        PropertiesComponent.getInstance(project).setValue(METHOD_TIMEOUT, text);
         dispose();
     }
 
@@ -91,11 +109,11 @@ public class SettingDialog extends JDialog {
      */
     private void $$$setupUI$$$() {
         contentPane = new JPanel();
-        contentPane.setLayout(new GridLayoutManager(2, 1, new Insets(10, 10, 10, 10), -1, -1));
+        contentPane.setLayout(new GridLayoutManager(3, 1, new Insets(10, 10, 10, 10), -1, -1));
         contentPane.setToolTipText("热部署配置");
         final JPanel panel1 = new JPanel();
         panel1.setLayout(new GridLayoutManager(1, 2, new Insets(0, 0, 0, 0), -1, -1));
-        contentPane.add(panel1, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, 1, null, null, null, 0, false));
+        contentPane.add(panel1, new GridConstraints(2, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, 1, null, null, null, 0, false));
         final Spacer spacer1 = new Spacer();
         panel1.add(spacer1, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
         final JPanel panel2 = new JPanel();
@@ -108,14 +126,29 @@ public class SettingDialog extends JDialog {
         buttonOK.setText("  ok  ");
         panel2.add(buttonOK, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         final JPanel panel3 = new JPanel();
-        panel3.setLayout(new GridLayoutManager(2, 1, new Insets(0, 0, 0, 0), -1, -1));
+        panel3.setLayout(new GridLayoutManager(3, 1, new Insets(0, 0, 0, 0), -1, -1));
         contentPane.add(panel3, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_NORTH, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
-        cbHotdeploy = new JCheckBox();
-        cbHotdeploy.setText("是否启动热部署");
-        panel3.add(cbHotdeploy, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        final JPanel panel4 = new JPanel();
+        panel4.setLayout(new GridLayoutManager(1, 3, new Insets(0, 0, 0, 0), -1, -1));
+        panel3.add(panel4, new GridConstraints(2, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
+        methodTimeout = new JTextField();
+        methodTimeout.setText("");
+        panel4.add(methodTimeout, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
+        timeoutlabel = new JLabel();
+        timeoutlabel.setText("警告超时时间");
+        panel4.add(timeoutlabel, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        final JLabel label1 = new JLabel();
+        label1.setText("ms");
+        panel4.add(label1, new GridConstraints(0, 2, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         cbXrebel = new JCheckBox();
         cbXrebel.setText("是否启动xrebel");
         panel3.add(cbXrebel, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        cbHotdeploy = new JCheckBox();
+        cbHotdeploy.setText("是否启动热部署");
+        panel3.add(cbHotdeploy, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        classMonitor = new JTextArea();
+        classMonitor.setText("");
+        contentPane.add(classMonitor, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_WANT_GROW, null, new Dimension(150, 50), null, 0, false));
     }
 
     /**

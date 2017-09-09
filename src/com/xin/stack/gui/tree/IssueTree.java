@@ -109,7 +109,6 @@ public class IssueTree extends Tree implements DataProvider {
             return null;
         }
         LiveIssue issue = ((IssueNode) node).issue();
-        int offset;
 //        RangeMarker range = new RangeMarker(issue.getTextRange().getStartOffset(), issue.getTextRange().getLength());
         return new OpenFileDescriptor(project, issue.getVirtualFile(), issue.getTextRange().getStartOffset());
     }

@@ -29,6 +29,7 @@ import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiType;
 import com.xin.stack.TreeVo;
+import org.jetbrains.org.objectweb.asm.Type;
 
 import java.util.Objects;
 
@@ -40,38 +41,52 @@ public class LiveIssue {
     private TextRange                            textRange;
     private Integer                              length;
     private String                               message;
+    private long                                 timeConsume;
+    private Project                              project;
 
     public LiveIssue(TreeVo treeVo, PsiClass psiClass, Project project) {
+        this.project = project;
         this.document = PsiDocumentManager.getInstance(project).getDocument(psiClass.getContainingFile());
-        String messageContent = treeVo.getMethodName();
         PsiMethod psiMethod = getMethod(treeVo, psiClass);
         if (psiMethod != null) {
-            this.textRange = psiMethod.getTextRange();
+            this.textRange = psiMethod.getNameIdentifier().getTextRange();
         }
-        this.message = messageContent;
+        this.message = treeVo.getTimeConsuming() + "ms | " + treeVo.getMethodName() + "(" + treeVo.getClassName() + ") ";
+        this.timeConsume = treeVo.getTimeConsuming();
         this.virtualFile = psiClass.getContainingFile().getVirtualFile();
     }
 
     private PsiMethod getMethod(TreeVo treeVo, PsiClass psiClass) {
+        Type[] argumentTypes = Type.getArgumentTypes(treeVo.getParamClassNames());
         for (PsiMethod psiMethod : psiClass.getMethods()) {
-            if (Objects.equals(psiMethod.getName(), treeVo.getMethodName()) && psiMethod.getParameterList().getParameters().length == treeVo.getParamClassNames().size()) {
-                for (int i = 0; i < psiMethod.getParameterList().getParameters().length; i++) {
-                    PsiType type = psiMethod.getParameterList().getParameters()[i].getType();
-                    String className;
-                    if (type instanceof PsiArrayType) {
-                        className = "[L" + ((PsiArrayType) type).getComponentType().getCanonicalText() + ";";
-                    } else {
-                        className = type.getCanonicalText();
-                    }
-                    if (className.equals(treeVo.getParamClassNames().get(i))) {
-                        return psiMethod;
-                    } else {
-                        System.out.println("出现异常");
-                    }
+            if (Objects.equals(psiMethod.getName(), treeVo.getMethodName()) && psiMethod.getParameterList().getParameters().length == argumentTypes.length) {
+                if (psiMethod.getParameterList().getParameters().length == 0) {
+                    return psiMethod;
+                }
+                if (compareMethod(argumentTypes, psiMethod)) {
+                    return psiMethod;
                 }
             }
         }
         return null;
+    }
+
+    private boolean compareMethod(Type[] argumentTypes, PsiMethod psiMethod) {
+        for (int i = 0; i < psiMethod.getParameterList().getParameters().length; i++) {
+            PsiType type = psiMethod.getParameterList().getParameters()[i].getType();
+            String className;
+            if (type instanceof PsiArrayType) {
+                className = ((PsiArrayType) type).getComponentType().getCanonicalText() + "[]";
+            } else {
+                className = type.getCanonicalText();
+            }
+            if (!className.equals(argumentTypes[i].getClassName())) {
+                return false;
+            } else {
+                System.out.println("出现异常");
+            }
+        }
+        return true;
     }
 
     public VirtualFile getVirtualFile() {
@@ -112,5 +127,13 @@ public class LiveIssue {
 
     public void setMessage(String message) {
         this.message = message;
+    }
+
+    public Project getProject() {
+        return project;
+    }
+
+    public long getTimeConsume() {
+        return timeConsume;
     }
 }

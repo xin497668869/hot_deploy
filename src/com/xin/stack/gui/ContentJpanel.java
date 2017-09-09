@@ -26,7 +26,6 @@ import javax.swing.*;
 import javax.swing.tree.DefaultTreeModel;
 import java.awt.*;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -38,10 +37,20 @@ import java.util.List;
 public class ContentJpanel extends SimpleToolWindowPanel {
 
 
-    private Tree          tree;
-    private Project       project;
-    private ActionToolbar mainToolbar;
-    private SummaryNode   summaryNode;
+    private Tree             tree;
+    private Project          project;
+    private ActionToolbar    mainToolbar;
+    private SummaryNode      summaryNode;
+    private DefaultTreeModel defaultTreeModel;
+
+    public void replainTreeVo(TreeVo treeVo) {
+        DumbService.getInstance(project).smartInvokeLater(() -> {
+            summaryNode.removeAllChildren();
+            initTree(project, treeVo, summaryNode);
+            defaultTreeModel.nodeStructureChanged(summaryNode);
+            TreeUtil.expandAll(tree);
+        });
+    }
 
     public ContentJpanel(Project project) {
         super(false, true);
@@ -50,12 +59,7 @@ public class ContentJpanel extends SimpleToolWindowPanel {
         DefaultTreeModel defaultTreeModel = new DefaultTreeModel(summaryNode);
         tree = new IssueTree(project, defaultTreeModel);
         tree.setToggleClickCount(0);
-        DumbService.getInstance(project).smartInvokeLater(() -> {
-            TreeVo testTreeVo = getTestTreeVo();
-            initTree(project, testTreeVo, summaryNode);
-            defaultTreeModel.nodeStructureChanged(summaryNode);
-        });
-
+        this.defaultTreeModel = defaultTreeModel;
 
         JPanel issuesPanel = new JPanel(new BorderLayout());
         TreeUtil.expandAll(tree);
@@ -68,30 +72,27 @@ public class ContentJpanel extends SimpleToolWindowPanel {
     }
 
     public void initTree(Project project, TreeVo testTreeVo, AbstractNode issueTree) {
-        PsiClass aClass = JavaPsiFacade.getInstance(project).findClass(testTreeVo.getClassName(), GlobalSearchScope.allScope(project));
+        String trueClassName;
+        if (testTreeVo.getClassName().contains("$$")) {
+            trueClassName = testTreeVo.getClassName().substring(0, testTreeVo.getClassName().indexOf("$$"));
+        } else {
+            trueClassName = testTreeVo.getClassName();
+        }
+
+        PsiClass aClass = JavaPsiFacade.getInstance(project).findClass(trueClassName, GlobalSearchScope.allScope(project));
         if (aClass != null) {
 
-            IssueNode newChild = new IssueNode(new LiveIssue(testTreeVo, aClass, project));
-            issueTree.add(newChild);
-            if (testTreeVo.getTreeVo() != null) {
-                for (TreeVo treeVo : testTreeVo.getTreeVo()) {
+            if (testTreeVo.getChildrens() != null) {
+
+                for (TreeVo treeVo : testTreeVo.getChildrens()) {
+                    IssueNode newChild = new IssueNode(new LiveIssue(treeVo, aClass, project));
+                    issueTree.add(newChild);
                     initTree(project, treeVo, newChild);
                 }
             }
         }
     }
 
-    public TreeVo getTestTreeVo() {
-        TreeVo treeVo = new TreeVo("SQLASTOutputVisitor.Main2", "main", Arrays.asList(String[].class.getName()), 3000L);
-        TreeVo treeVo1 = new TreeVo("SQLASTOutputVisitor.Test1", "test1", Arrays.asList(String.class.getName()), 1000L);
-        TreeVo treeVo11 = new TreeVo("SQLASTOutputVisitor.Test1", "test11", Arrays.asList(Boolean.class.getName()), 1000L);
-        TreeVo treeVo2 = new TreeVo("SQLASTOutputVisitor.Test2", "test2", Arrays.asList(int.class.getName()), 500L);
-        TreeVo treeVo_2 = new TreeVo("SQLASTOutputVisitor.Test2", "test2", Arrays.asList(int.class.getName()), 500L);
-        treeVo.setTreeVo(Arrays.asList(treeVo1, treeVo11));
-        treeVo1.setTreeVo(Arrays.asList(treeVo2));
-        treeVo11.setTreeVo(Arrays.asList(treeVo_2));
-        return treeVo;
-    }
 
     private static ActionGroup createActionGroup(Collection<AnAction> actions) {
         SimpleActionGroup actionGroup = new SimpleActionGroup();

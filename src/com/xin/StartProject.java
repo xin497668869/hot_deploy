@@ -25,6 +25,7 @@ import java.util.WeakHashMap;
 
 import static com.xin.gui.SettingDialog.IS_HOTDEPLOY;
 import static com.xin.gui.SettingDialog.IS_XREBEL;
+import static com.xin.gui.SettingDialog.MONITOR_CLASS;
 
 /**
  * @author linxixin@cvte.com
@@ -81,7 +82,9 @@ public class StartProject implements StartupActivity {
                     if (hotDeployFile.exists()) {
                         int availablePort = NetUtils.getAvailablePort();
                         propertiesComponent.setValue(PROJECT_PORT, String.valueOf(availablePort));
-                        return " -javaagent:\"" + hotDeployFile.getAbsolutePath() + "\"=" + availablePort;
+                        String value = PropertiesComponent.getInstance(project).getValue(MONITOR_CLASS);
+//                        return " -javaagent:\"" + hotDeployFile.getAbsolutePath() + "\"=" + availablePort + (value != null ? ";;;" + value : "");
+                        return " -javaagent:\"G:\\workspaces\\idea\\维护\\hot_deploy\\hot_deploy_agent\\target\\hot_deploy_agent.jar\"=\"" + availablePort + (value != null ? ";;;" + value : "\"");
                     } else {
                         Messages.showInfoMessage("hot_deploy不存在插件当中,无法使用,  请禁用 " + hotDeployFile.getAbsolutePath(), "提示");
                         SettingDialog dialog = new SettingDialog(project);

@@ -11,8 +11,10 @@ import java.util.List;
  */
 @Data
 public class ResponseData {
-    private DbDetailInfoVo dbDetailInfoVo;
-    private List<String>   sql;
+    private DbDetailInfoVo      dbDetailInfoVo;
+    private List<String>        sql;
+    private StackTraceElement[] stackTraceElement;
+    private TreeVo              treeVo;
 
     @Data
     public class DbDetailInfoVo {
