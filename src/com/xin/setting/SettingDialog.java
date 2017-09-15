@@ -1,4 +1,4 @@
-package com.xin.gui;
+package com.xin.setting;
 
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.project.Project;
@@ -16,10 +16,6 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
 public class SettingDialog extends JDialog {
-    public static final String IS_HOTDEPLOY   = "is_hotdeploy";
-    public static final String IS_XREBEL      = "is_xrebel";
-    public static final String MONITOR_CLASS  = "monitor_class";
-    public static final String METHOD_TIMEOUT = "method_timeout";
     private JPanel     contentPane;
     private JButton    buttonOK;
     private JButton    cancelButton;
@@ -35,11 +31,11 @@ public class SettingDialog extends JDialog {
         setContentPane(contentPane);
         setModal(true);
         getRootPane().setDefaultButton(buttonOK);
-        cbHotdeploy.setSelected(PropertiesComponent.getInstance(project).getBoolean(IS_HOTDEPLOY));
-        cbXrebel.setSelected(PropertiesComponent.getInstance(project).getBoolean(IS_XREBEL));
-        classMonitor.setText(PropertiesComponent.getInstance(project).getValue(MONITOR_CLASS));
+        cbHotdeploy.setSelected(PropertiesComponent.getInstance(project).getBoolean(SettingProperty.IS_HOTDEPLOY));
+        cbXrebel.setSelected(PropertiesComponent.getInstance(project).getBoolean(SettingProperty.IS_XREBEL));
+        classMonitor.setText(PropertiesComponent.getInstance(project).getValue(SettingProperty.MONITOR_CLASS));
         classMonitor.setSize(300, 500);
-        methodTimeout.setText(String.valueOf(PropertiesComponent.getInstance(project).getOrInitLong(METHOD_TIMEOUT, Integer.MAX_VALUE)));
+        methodTimeout.setText(String.valueOf(PropertiesComponent.getInstance(project).getOrInitLong(SettingProperty.METHOD_TIMEOUT, Integer.MAX_VALUE)));
 
 
         buttonOK.addActionListener(new ActionListener() {
@@ -73,9 +69,9 @@ public class SettingDialog extends JDialog {
 
 
     private void onOK() {
-        PropertiesComponent.getInstance(project).setValue(IS_HOTDEPLOY, cbHotdeploy.isSelected());
-        PropertiesComponent.getInstance(project).setValue(IS_XREBEL, cbXrebel.isSelected());
-        PropertiesComponent.getInstance(project).setValue(MONITOR_CLASS, classMonitor.getText());
+        PropertiesComponent.getInstance(project).setValue(SettingProperty.IS_HOTDEPLOY, cbHotdeploy.isSelected());
+        PropertiesComponent.getInstance(project).setValue(SettingProperty.IS_XREBEL, cbXrebel.isSelected());
+        PropertiesComponent.getInstance(project).setValue(SettingProperty.MONITOR_CLASS, classMonitor.getText());
         String text = methodTimeout.getText();
         try {
             Long.valueOf(text);
@@ -83,7 +79,7 @@ public class SettingDialog extends JDialog {
             Messages.showErrorDialog("必须填写整数类型数据 " + text, "提示");
             return;
         }
-        PropertiesComponent.getInstance(project).setValue(METHOD_TIMEOUT, text);
+        PropertiesComponent.getInstance(project).setValue(SettingProperty.METHOD_TIMEOUT, text);
         dispose();
     }
 

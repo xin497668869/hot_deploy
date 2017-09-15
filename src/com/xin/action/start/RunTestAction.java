@@ -24,7 +24,7 @@ import java.io.OutputStreamWriter;
 import java.net.ConnectException;
 import java.net.Socket;
 
-import static com.xin.StartProject.PROJECT_PORT;
+import static com.xin.setting.SettingProperty.PROJECT_PORT;
 
 
 /**

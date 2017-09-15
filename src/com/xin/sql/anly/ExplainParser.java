@@ -25,12 +25,6 @@ public class ExplainParser {
         Arrays.stream(TypeEnum.values()).forEach(typeEnum -> types.add(typeEnum.getType()));
     }
 
-//    @Test
-//    public void start() {
-//        parser(ExplainResult.newInstance());
-//    }
-
-
     public static String parser(ExplainResult result) {
         StringBuilder stringBuilder = new StringBuilder();
         if (!StringUtils.isEmpty(result.getSelectType())) {

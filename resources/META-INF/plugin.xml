@@ -18,35 +18,212 @@
     <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html for description -->
     <idea-version since-build="145.0"/>
 
-    <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
-         on how to target different products -->
-    <!-- uncomment to enable plugin in all products
-    <depends>com.intellij.modules.lang</depends>
-    -->
+
+    <depends optional="true">com.intellij.javaee</depends>
+    <depends optional="true">WebSphere</depends>
+    <depends optional="true">Weblogic</depends>
+    <depends optional="true">org.jetbrains.idea.maven</depends>
+    <depends optional="true">org.jetbrains.plugins.gradle</depends>
+    <!-- added by request from JetBrains devs. Fixes some problem with imports on their side -->
+    <depends>com.intellij.modules.java</depends>
 
     <extensions defaultExtensionNs="com.intellij">
+
         <postStartupActivity implementation="com.xin.StartProject"></postStartupActivity>
-        <toolWindow id="code_review" anchor="right" icon="/images/haha.png"
-                    factoryClass="com.xin.stack.StackToolWindowFactory"/>
-        <scratch.rootType implementation="com.intellij.database.console.DbConsoleRootType"/>
-        <scratch.rootType implementation="com.intellij.database.run.ui.grid.editors.CellEditorScratchRootType"/>
+
+        <facetType implementation="com.zeroturnaround.javarebel.idea.plugin.facet.JRebelFacetType"/>
+        <executor implementation="com.zeroturnaround.javarebel.idea.plugin.runner.JRebelExecutor"/>
+        <executor implementation="com.zeroturnaround.javarebel.idea.plugin.runner.JRebelDebugExecutor"/>
+        <programRunner implementation="com.zeroturnaround.javarebel.idea.plugin.runner.JRebelRunner"/>
+        <programRunner implementation="com.zeroturnaround.javarebel.idea.plugin.runner.JRebelDebugRunner"/>
+        <java.programPatcher implementation="com.zeroturnaround.javarebel.idea.plugin.runner.PreRunChecks"/>
+        <toolWindow factoryClass="com.zeroturnaround.javarebel.idea.plugin.toolwindow.JRebelWindowFactory"
+                    icon="/icons/zt_13x13.png" id="JRebel" anchor="left" secondary="true"/>
+        <toolWindow factoryClass="com.zeroturnaround.javarebel.idea.plugin.toolwindow.RebelRemoteLogWindowFactory"
+                    icon="/icons/zt_13x13.png" id="JRebel Console" anchor="bottom" secondary="true"/>
+        <!--<applicationConfigurable id="com.zeroturnaround.javarebel.idea.plugin.settings.JRebelSettingsComponent"-->
+        <!--provider="com.zeroturnaround.javarebel.idea.plugin.settings.JRebelSettingsComponent"-->
+        <!--displayName="JRebel" groupId="root" dynamic="true" />-->
+        <errorHandler implementation="com.zeroturnaround.javarebel.idea.plugin.logger.ZtErrorHandler"/>
+    </extensions>
+
+    <extensions defaultExtensionNs="org.jetbrains.plugins.gradle">
+        <projectResolve
+                implementation="com.zeroturnaround.javarebel.idea.plugin.runner.gradle.JRebelGradleProjectResolver"/>
     </extensions>
 
     <actions>
-        <!-- Add your actions here -->
-        <action id="com.xin.action.start.RunTestAction" class="com.xin.action.start.RunTestAction"
+        <action id="com.xin.action.RunTestAction" class="com.xin.action.start.RunTestAction"
                 text="热部署启动" description="自动生成接口">
             <add-to-group group-id="WindowMenu" anchor="first"/>
         </action>
-        <action id="com.xin.action.start.ReRunTestAction" class="com.xin.action.start.ReRunTestAction"
+        <action id="com.xin.action.RunTestAction2" class="com.xin.action.start.ReRunTestAction"
                 text="热部署重启动" description="自动生成接口">
             <add-to-group group-id="WindowMenu" anchor="first"/>
         </action>
-        <action id="com.xin.action.setting.RunTestSettingAction" class="com.xin.action.setting.RunTestSettingAction"
+        <action id="com.xin.action.RunTestSettingAction" class="com.xin.action.setting.RunTestSettingAction"
                 text="热部署配置" description="配置参数">
             <add-to-group group-id="WindowMenu" anchor="first"/>
         </action>
 
+
+        <!--<group id="JRebelGroup" text="JRebel" description="JRebel group" icon="/icons/zt_16x16.png" popup="true">-->
+        <!--<action id="com.zeroturnaround.javarebel.idea.plugin.actions.GenerateRebelAction"-->
+        <!--class="com.zeroturnaround.javarebel.idea.plugin.actions.GenerateRebelAction"-->
+        <!--description="Generate and/or open rebel.xml"-->
+        <!--text="rebel.xml"-->
+        <!--icon="/fileTypes/xml.png">-->
+        <!--</action>-->
+
+        <!--<action id="com.zeroturnaround.javarebel.idea.plugin.actions.JRebelFacetAction"-->
+        <!--class="com.zeroturnaround.javarebel.idea.plugin.actions.JRebelFacetAction"-->
+        <!--description="Open JRebel facet"-->
+        <!--text="Configure module"-->
+        <!--icon="/actions/properties.png">-->
+        <!--</action>-->
+
+        <!--<separator/>-->
+
+        <!--<action id="com.zeroturnaround.javarebel.idea.plugin.SyncAction"-->
+        <!--class="com.zeroturnaround.javarebel.idea.plugin.actions.SyncAction"-->
+        <!--description="Synchronize with server"-->
+        <!--text="JRebel: Synchronize">-->
+        <!--</action>-->
+
+        <!--<add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>-->
+        <!--</group>-->
+
+        <!--<action id="synchronizeProject"-->
+        <!--class="com.zeroturnaround.javarebel.idea.plugin.actions.SynchronizeProjectAction"-->
+        <!--text="JRebel: synchronize project with remote server" description="Synchronizes all modules at once"-->
+        <!--icon="/icons/cloud_16x16.png">-->
+        <!--<add-to-group group-id="RunnerActions"-->
+        <!--relative-to-action="com.zeroturnaround.javarebel.idea.plugin.runner.JRebelDebugRunner"-->
+        <!--anchor="after"/>-->
+        <!--</action>-->
+        <!--                           relative-to-action="com.zeroturnaround.javarebel.idea.plugin.runner.JRebelDebugRunner" -->
+        <!--<action id="ToolWindowOpenFacet"-->
+        <!--class="com.zeroturnaround.javarebel.idea.plugin.toolwindow.actions.ToolWindowOpenFacet"-->
+        <!--text="JRebel facet" description="Open and/or create JRebel facet" icon="/actions/properties.png">-->
+        <!--</action>-->
+
+        <!--<action id="ToolWindowOpenSettings" class="com.zeroturnaround.javarebel.idea.plugin.actions.OpenSettingsAction"-->
+        <!--text="JRebel Settings" description="Open JRebel settings" icon="/general/ideOptions.png">-->
+        <!--</action>-->
+
+        <!--<group id="JRebelHelpMenuGroup" class="com.intellij.openapi.actionSystem.DefaultActionGroup" text="JRebel" description="JRebel group" icon="/icons/zt_16x16.png" popup="true">-->
+        <!--<add-to-group group-id="HelpMenu" anchor="before" relative-to-action="About"/>-->
+        <!--</group>-->
+        <!--<action id="jrebel.config" class="com.zeroturnaround.javarebel.idea.plugin.actions.ConfigAction"-->
+        <!--text="Configuration" description="Activate JRebel">-->
+        <!--<add-to-group group-id="JRebelHelpMenuGroup" anchor="last" />-->
+        <!--</action>-->
+        <!--<action id="jrebel.activate" class="com.zeroturnaround.javarebel.idea.plugin.actions.ActivateAction"-->
+        <!--text="Activation" description="Activate JRebel">-->
+        <!--<add-to-group group-id="JRebelHelpMenuGroup" anchor="last" />-->
+        <!--</action>-->
+        <!--<action id="jrebel.support" class="com.zeroturnaround.javarebel.idea.plugin.actions.SupportAction"-->
+        <!--text="Submit a Support Ticket" description="Send message to JRebel support">-->
+        <!--<add-to-group group-id="JRebelHelpMenuGroup" anchor="last" />-->
+        <!--</action>-->
     </actions>
+
+
+    <module-components>
+        <component>
+            <implementation-class>
+                com.zeroturnaround.javarebel.idea.plugin.remoting.engine.RemotingComponent
+            </implementation-class>
+        </component>
+
+        <component>
+            <implementation-class>
+                com.zeroturnaround.javarebel.idea.plugin.toolwindow.ModuleEvent
+            </implementation-class>
+        </component>
+
+    </module-components>
+
+    <project-components>
+
+        <component>
+            <implementation-class>
+                com.zeroturnaround.javarebel.idea.plugin.notifications.IdeaNotificationServer
+            </implementation-class>
+        </component>
+
+        <component>
+            <implementation-class>
+                com.zeroturnaround.javarebel.idea.plugin.settings.JRebelProjectProperties
+            </implementation-class>
+        </component>
+
+        <component>
+            <implementation-class>
+                com.zeroturnaround.javarebel.idea.plugin.runner.BootstrapPreGenerator
+            </implementation-class>
+        </component>
+
+    </project-components>
+
+
+    <application-components>
+        <component>
+            <!-- This has to be first -->
+            <implementation-class>
+                com.zeroturnaround.javarebel.idea.plugin.logger.IdeaLog
+            </implementation-class>
+        </component>
+
+        <component>
+            <implementation-class>
+                com.zeroturnaround.javarebel.idea.plugin.remoting.console.RemoteLogger
+            </implementation-class>
+        </component>
+
+        <component>
+            <implementation-class>
+                com.zeroturnaround.javarebel.idea.plugin.debugger.JRebelIdeaDebuggerPlugin
+            </implementation-class>
+        </component>
+
+        <component>
+            <implementation-class>
+                com.zeroturnaround.javarebel.idea.plugin.settings.JRebelSettingsState
+            </implementation-class>
+        </component>
+
+        <component>
+            <implementation-class>
+                com.zeroturnaround.javarebel.idea.plugin.activation.JRebelIntegration
+            </implementation-class>
+        </component>
+
+        <component>
+            <implementation-class>
+                com.zeroturnaround.javarebel.idea.plugin.notifications.PersistentSettingsManager
+            </implementation-class>
+        </component>
+
+        <component>
+            <implementation-class>com.zeroturnaround.javarebel.idea.plugin.JRebelIdeaPlugin</implementation-class>
+        </component>
+
+        <component>
+            <implementation-class>
+                com.zeroturnaround.javarebel.idea.plugin.notifications.nps.NPSIdeaComponent
+            </implementation-class>
+        </component>
+
+        <component>
+            <implementation-class>com.zeroturnaround.javarebel.idea.plugin.settings.IntellijProxyProvider
+            </implementation-class>
+        </component>
+
+        <component>
+            <implementation-class>com.zeroturnaround.javarebel.idea.plugin.facet.JRebelFacetCleanupComponent
+            </implementation-class>
+        </component>
+    </application-components>
 
 </idea-plugin>

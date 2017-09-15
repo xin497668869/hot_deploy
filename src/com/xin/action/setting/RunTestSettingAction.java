@@ -4,7 +4,7 @@ import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
 import com.xin.base.BaseAnAction;
 import com.xin.base.PluginHelper;
-import com.xin.gui.SettingDialog;
+import com.xin.setting.SettingDialog;
 
 import java.io.IOException;
 

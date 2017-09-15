@@ -1,8 +1,5 @@
 package com.xin;
 
-import com.alibaba.druid.sql.dialect.mysql.visitor.MySqlOutputVisitor;
-import com.alibaba.druid.sql.visitor.SQLASTOutputVisitor;
-import com.alibaba.druid.support.logging.LogFactory;
 import com.intellij.execution.CommonJavaRunConfigurationParameters;
 import com.intellij.execution.ExecutionListener;
 import com.intellij.execution.ExecutionManager;
@@ -10,22 +7,24 @@ import com.intellij.execution.configurations.RunProfile;
 import com.intellij.execution.process.ProcessHandler;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.ide.plugins.PluginManager;
-import com.intellij.ide.util.PropertiesComponent;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.startup.StartupActivity;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.util.messages.MessageBus;
-import com.xin.gui.SettingDialog;
+import com.xin.setting.SettingDialog;
+import com.xin.setting.SettingProperty;
 import com.xin.tools.NetUtils;
+import com.zeroturnaround.javarebel.conf.RebelPropertyResolver;
 import org.jetbrains.annotations.NotNull;
+import org.zeroturnaround.bundled.org.bouncycastle.crypto.signers.RSADigestSigner;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.WeakHashMap;
+import java.util.stream.Collectors;
 
-import static com.xin.gui.SettingDialog.IS_HOTDEPLOY;
-import static com.xin.gui.SettingDialog.IS_XREBEL;
-import static com.xin.gui.SettingDialog.MONITOR_CLASS;
 
 /**
  * @author linxixin@cvte.com
@@ -33,24 +32,33 @@ import static com.xin.gui.SettingDialog.MONITOR_CLASS;
  * @description
  */
 public class StartProject implements StartupActivity {
-    public static LogFactory          logFactory;
-    public static MySqlOutputVisitor  mySqlOutputVisitor;
-    public static SQLASTOutputVisitor sqlastOutputVisitor;
 
-    public static final String                      PROJECT_PORT       = "project_port";
-    public              WeakHashMap<String, String> executorIdParamMap = new WeakHashMap<>();
+    private static final Logger log = Logger.getInstance(StartProject.class);
+
+    public WeakHashMap<String, String> executorIdParamMap = new WeakHashMap<>();
+
+    static {
+        initData();
+    }
+
+    public static void initData() {
+        String hotDeployLocation = SettingProperty.getProjectLocation();
+        //设置jrebel的javaagent包
+        System.setProperty("griffin.jar.location", hotDeployLocation + File.separator + "classes" + File.separator + "jrebel6" + File.separator + "jrebel.jar");
+
+        try {
+            RebelPropertyResolver.add("rebel.license", hotDeployLocation + File.separator + "classes" + File.separator + "jrebel6" + File.separator + "jrebel_test.lic");
+        } catch (IOException e) {
+            log.error("rebel.license设置失败", e);
+        }
+        //提前加载 RSADigestSigner
+        RSADigestSigner.class.getName();
+    }
 
     @Override
     public void runActivity(@NotNull Project project) {
 
-        PropertiesComponent propertiesComponent = PropertiesComponent.getInstance(project);
-        if (!propertiesComponent.isValueSet(IS_HOTDEPLOY)) {
-            propertiesComponent.setValue(IS_HOTDEPLOY, false);
-        }
-
-        if (!propertiesComponent.isValueSet(IS_XREBEL)) {
-            propertiesComponent.setValue(IS_XREBEL, false);
-        }
+        SettingProperty.setProjectDefaultSetting(project);
 
         MessageBus messageBus = project.getMessageBus();
         messageBus.connect().subscribe(ExecutionManager.EXECUTION_TOPIC, new ExecutionListener() {
@@ -76,30 +84,34 @@ public class StartProject implements StartupActivity {
                 }
             }
 
+            /**
+             * 获取hotdeploy 的javaagent参数
+             *
+             * @param hotDeployPath
+             * @return
+             */
             public String getHotDeployParam(File hotDeployPath) {
-                if (propertiesComponent.getBoolean(IS_HOTDEPLOY)) {
-                    File hotDeployFile = new File(hotDeployPath, "hot_deploy_agent" + File.separator + "hot_deploy_agent.jar");
+                if (SettingProperty.getIsHotdeploy(project)) {
+                    File hotDeployFile = new File(hotDeployPath, SettingProperty.HOT_DEPLOY_AGENT + File.separator + "hot_deploy_agent.jar");
                     if (hotDeployFile.exists()) {
                         int availablePort = NetUtils.getAvailablePort();
-                        propertiesComponent.setValue(PROJECT_PORT, String.valueOf(availablePort));
-                        String value = PropertiesComponent.getInstance(project).getValue(MONITOR_CLASS);
-//                        return " -javaagent:\"" + hotDeployFile.getAbsolutePath() + "\"=" + availablePort + (value != null ? ";;;" + value : "");
-                        return " -javaagent:\"G:\\workspaces\\idea\\维护\\hot_deploy\\hot_deploy_agent\\target\\hot_deploy_agent.jar\"=\"" + availablePort + (value != null ? ";;;" + value : "\"");
+                        SettingProperty.setProjectPort(project, availablePort);
+                        String value = SettingProperty.getMonitorClass(project).stream().collect(Collectors.joining(","));
+                        return " -javaagent:\"" + SettingProperty.getProjectLocation() + File.separator + SettingProperty.HOT_DEPLOY_AGENT + File.separator + "target" + File.separator + "hot_deploy_agent.jar\"" +
+                                "=\"" + availablePort + (value != null ? ";;;" + value : "\"");
                     } else {
                         Messages.showInfoMessage("hot_deploy不存在插件当中,无法使用,  请禁用 " + hotDeployFile.getAbsolutePath(), "提示");
                         SettingDialog dialog = new SettingDialog(project);
                         dialog.pack();
                         dialog.setVisible(true);
-                        return "";
                     }
-                } else {
-                    return "";
                 }
+                return "";
             }
 
             public String getXrebelParam(File hotDeployPath) {
-                if (propertiesComponent.getBoolean(IS_XREBEL)) {
-                    File xrebelFile = new File(hotDeployPath, "hot_deploy_agent" + File.separator + "xrebel.jar");
+                if (SettingProperty.getIsXrebel(project)) {
+                    File xrebelFile = new File(hotDeployPath, SettingProperty.HOT_DEPLOY_AGENT + File.separator + "xrebel.jar");
                     if (xrebelFile.exists()) {
                         return " -javaagent:\"" + xrebelFile.getAbsolutePath() + "\"";
                     } else {
@@ -107,11 +119,10 @@ public class StartProject implements StartupActivity {
                         SettingDialog dialog = new SettingDialog(project);
                         dialog.pack();
                         dialog.setVisible(true);
-                        return "";
                     }
-                } else {
-                    return "";
                 }
+                return "";
+
             }
 
             @Override
@@ -137,4 +148,5 @@ public class StartProject implements StartupActivity {
         });
 
     }
+
 }

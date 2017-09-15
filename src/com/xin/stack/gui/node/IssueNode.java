@@ -19,15 +19,14 @@
  */
 package com.xin.stack.gui.node;
 
-import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.util.IconLoader;
 import com.intellij.ui.SimpleTextAttributes;
+import com.xin.setting.SettingProperty;
 import com.xin.stack.gui.tree.TreeCellRenderer;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 
-import static com.xin.gui.SettingDialog.METHOD_TIMEOUT;
 
 public class IssueNode extends AbstractNode {
     public static final Icon ICON             = IconLoader.getIcon("/images/haha.png");
@@ -44,7 +43,8 @@ public class IssueNode extends AbstractNode {
     public void render(TreeCellRenderer renderer) {
 
         renderer.append(issueCoordinates(issue), SimpleTextAttributes.GRAY_ATTRIBUTES);
-        long timeoutValue = PropertiesComponent.getInstance(issue.getProject()).getOrInitLong(METHOD_TIMEOUT, Integer.MAX_VALUE);
+        long timeoutValue = SettingProperty.getMethodTimeout(issue.getProject());
+
         if (issue.getTextRange() == null) {
             renderer.setIcon(ICON_NO_POSITION);
         } else if (issue.getTimeConsume() > timeoutValue) {
